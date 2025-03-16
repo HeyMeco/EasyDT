@@ -1,0 +1,17 @@
+// Simple DTS file for testing
+
+/ {
+    model = "Simple Test Device";
+    compatible = "test,simple";
+    
+    memory {
+        device_type = "memory";
+        reg = <0x0 0x1000000>;
+    };
+    
+    test-node {
+        string-property = "test string";
+        numeric-property = <42>;
+        boolean-property;
+    };
+}; 
