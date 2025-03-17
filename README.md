@@ -1,5 +1,7 @@
 # EasyDT - Device Tree Tools Collection
 
+![EasyDT Dashboard](./readme-pictures/EasyDT-Dashboard.jpeg)
+
 A comprehensive collection of tools designed to simplify working with Device Tree Source (DTS) files. Device Trees are used in embedded systems and Linux to describe hardware configurations without hardcoding them into the kernel.
 
 ## Tools Included
@@ -18,6 +20,19 @@ A powerful visualization tool that parses Device Tree Source files and presents 
   - JSON output can be used for programmatic analysis or integration with other tools
   - Custom output path can be specified
 - Command-line interface for easy integration into workflows
+
+### Web Dashboard
+
+A web-based dashboard that provides a user-friendly interface to the EasyDT tools. Access and use the tools through a modern web interface without needing to use the command line.
+
+[View Web Dashboard Documentation](./web_dashboard/README.md)
+
+**Key Features:**
+- Modern, responsive web interface
+- Upload and visualize DTS files in the browser
+- Interactive tree view for exploring device tree structures
+- Export visualized data as JSON
+- Easy-to-use drag-and-drop interface
 
 ## Why Use EasyDT?
 
@@ -47,6 +62,22 @@ Each tool has its own specific requirements, but generally:
    ```
 
 3. Install the required dependencies and follow the tool-specific instructions.
+
+### Using the Web Dashboard
+
+1. Navigate to the web dashboard directory:
+   ```
+   cd web_dashboard
+   ```
+
+2. Run the dashboard:
+   ```
+   ./run.sh
+   ```
+
+3. Open your web browser and go to http://localhost:5000
+
+4. Use the dashboard to access the EasyDT tools through a web interface.
 
 ## Future Tools (Planned)
 

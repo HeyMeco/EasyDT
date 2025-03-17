@@ -1,0 +1,4 @@
+flask==2.2.3
+rich>=10.0.0
+waitress==2.1.2
+werkzeug==2.2.3 

@@ -1,0 +1,157 @@
+/* Global Styles */
+body {
+    background-color: #f5f5f5;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.footer {
+    margin-top: auto;
+}
+
+/* Color Theme */
+:root {
+    --primary-color: #0d6efd;    /* Bootstrap primary blue */
+    --secondary-color: #005E54;  /* Custom green */
+    --secondary-light: #007e71;  /* Lighter shade for hover effects */
+    --secondary-dark: #004940;   /* Darker shade for active states */
+    --secondary-bg-light: rgba(0, 94, 84, 0.1); /* Very light background */
+    --secondary-muted: #406963;  /* More grayish/muted version of our green */
+}
+
+/* Custom color classes */
+.bg-custom-secondary {
+    background-color: var(--secondary-color) !important;
+}
+
+.bg-custom-secondary-muted {
+    background-color: var(--secondary-muted) !important;
+}
+
+.text-custom-secondary {
+    color: var(--secondary-color) !important;
+}
+
+.text-custom-secondary-muted {
+    color: var(--secondary-muted) !important;
+}
+
+.btn-custom-secondary {
+    background-color: var(--secondary-color);
+    border-color: var(--secondary-color);
+    color: white;
+}
+
+.btn-custom-secondary:hover {
+    background-color: var(--secondary-light);
+    border-color: var(--secondary-light);
+    color: white;
+}
+
+.btn-custom-secondary:active, .btn-custom-secondary:focus {
+    background-color: var(--secondary-dark) !important;
+    border-color: var(--secondary-dark) !important;
+    color: white !important;
+    box-shadow: 0 0 0 0.25rem rgba(0, 94, 84, 0.5) !important;
+}
+
+.btn-outline-custom-secondary {
+    color: var(--secondary-color);
+    border-color: var(--secondary-color);
+}
+
+.btn-outline-custom-secondary:hover {
+    background-color: var(--secondary-color);
+    color: white;
+}
+
+.btn-custom-secondary-muted {
+    background-color: var(--secondary-muted);
+    border-color: var(--secondary-muted);
+    color: white;
+}
+
+.btn-custom-secondary-muted:hover {
+    background-color: #4a7974;
+    border-color: #4a7974;
+    color: white;
+}
+
+.btn-custom-secondary-muted:active, .btn-custom-secondary-muted:focus {
+    background-color: #365652 !important;
+    border-color: #365652 !important;
+    color: white !important;
+    box-shadow: 0 0 0 0.25rem rgba(64, 105, 99, 0.5) !important;
+}
+
+/* Dashboard */
+.card {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border: none;
+    transition: transform 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+}
+
+.card-header {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+    font-weight: bold;
+}
+
+/* Custom card header with secondary color */
+.card-header-secondary {
+    background-color: var(--secondary-color);
+    color: white;
+}
+
+/* Icons */
+.card-header i {
+    margin-right: 8px;
+}
+
+/* Tool Cards */
+.tool-card {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.tool-card .card-body {
+    flex: 1;
+}
+
+.tool-card .btn {
+    margin-top: auto;
+}
+
+/* Custom Navbar */
+.navbar-brand {
+    font-weight: bold;
+    letter-spacing: 1px;
+}
+
+.navbar-custom-secondary {
+    background-color: var(--secondary-color);
+}
+
+/* Tree View */
+.tree-container {
+    max-height: 70vh;
+    overflow-y: auto;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+.property-value-secondary {
+    color: var(--secondary-color);
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .tool-card {
+        margin-bottom: 20px;
+    }
+} 

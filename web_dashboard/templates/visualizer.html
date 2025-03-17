@@ -1,0 +1,478 @@
+{% extends "base.html" %}
+
+{% block title %}EasyDT Dashboard - DTS Visualizer{% endblock %}
+
+{% block extra_css %}
+<style>
+    .tree-container {
+        max-height: 70vh;
+        overflow-y: auto;
+        padding: 15px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        background-color: #f8f9fa;
+    }
+    
+    .tree-node {
+        margin-left: 20px;
+        padding: 5px 0;
+        position: relative;
+    }
+    
+    .tree-node:before {
+        content: "";
+        position: absolute;
+        left: -10px;
+        top: 0;
+        border-left: 1px solid #ccc;
+        height: 100%;
+    }
+    
+    .tree-node:after {
+        content: "";
+        position: absolute;
+        left: -10px;
+        top: 12px;
+        border-top: 1px solid #ccc;
+        width: 10px;
+    }
+    
+    .tree-node:last-child:before {
+        height: 12px;
+    }
+    
+    .node-name {
+        font-weight: bold;
+        cursor: pointer;
+    }
+    
+    .node-properties, .node-labels {
+        margin-left: 15px;
+        display: none;
+    }
+    
+    .property-name {
+        color: #0d6efd;
+    }
+    
+    .property-value {
+        color: var(--secondary-color);
+    }
+    
+    .label-name {
+        color: #6610f2;
+    }
+    
+    .upload-container {
+        border: 2px dashed #ccc;
+        padding: 20px;
+        text-align: center;
+        cursor: pointer;
+        border-radius: 5px;
+        transition: all 0.3s;
+    }
+    
+    .upload-container:hover {
+        border-color: #0d6efd;
+    }
+    
+    .upload-container.drag-over {
+        border-color: #0d6efd;
+        background-color: #f8f9fa;
+    }
+    
+    #loading-spinner {
+        display: none;
+    }
+    
+    .tree-toggle {
+        cursor: pointer;
+        margin-right: 5px;
+    }
+    
+    .node-content {
+        display: inline-block;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-custom-secondary text-white">
+                    <h3 class="mb-0"><i class="fas fa-project-diagram me-2"></i>DTS Visualizer</h3>
+                </div>
+                <div class="card-body">
+                    <p>
+                        Upload a Device Tree Source (.dts) or Device Tree Source Include (.dtsi) file to visualize its structure. The tool will parse the file
+                        and display the hierarchical structure of nodes, properties, and labels.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Upload DTS File</h5>
+                </div>
+                <div class="card-body">
+                    <div id="upload-container" class="upload-container mb-3">
+                        <i class="fas fa-upload fa-2x mb-2"></i>
+                        <p class="mb-1">Drag and drop a DTS/DTSI file here</p>
+                        <p class="text-muted mb-2">Or click to select a file</p>
+                        <input type="file" id="dts-file-input" accept=".dts,.dtsi" style="display: none;">
+                    </div>
+                    <div id="file-details" class="d-none">
+                        <div class="alert alert-info">
+                            <p class="mb-1"><strong>Selected File:</strong> <span id="file-name"></span></p>
+                            <p class="mb-0"><strong>Size:</strong> <span id="file-size"></span></p>
+                        </div>
+                        <button id="visualize-btn" class="btn btn-custom-secondary w-100">Visualize</button>
+                    </div>
+                    <div id="loading-spinner" class="text-center mt-3">
+                        <div class="spinner-border text-custom-secondary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-2">Processing DTS file...</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="export-options" class="card mt-3 d-none">
+                <div class="card-header">
+                    <h5 class="mb-0">Export Options</h5>
+                </div>
+                <div class="card-body">
+                    <button id="export-json-btn" class="btn btn-custom-secondary w-100">
+                        <i class="fas fa-download me-2"></i>Export as JSON
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8 mb-4">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Device Tree Structure</h5>
+                    <div>
+                        <button id="expand-all-btn" class="btn btn-sm btn-outline-custom-secondary me-2 d-none">
+                            <i class="fas fa-expand-alt me-1"></i>Expand All
+                        </button>
+                        <button id="collapse-all-btn" class="btn btn-sm btn-outline-secondary d-none">
+                            <i class="fas fa-compress-alt me-1"></i>Collapse All
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div id="tree-container" class="tree-container">
+                        <div id="tree-placeholder" class="text-center text-muted py-5">
+                            <i class="fas fa-tree fa-3x mb-3"></i>
+                            <p>Upload a DTS or DTSI file to visualize its structure</p>
+                        </div>
+                        <div id="tree-view" class="d-none"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let dtsData = null;
+    
+    // File upload handling
+    const uploadContainer = document.getElementById('upload-container');
+    const fileInput = document.getElementById('dts-file-input');
+    const fileDetails = document.getElementById('file-details');
+    const fileName = document.getElementById('file-name');
+    const fileSize = document.getElementById('file-size');
+    const visualizeBtn = document.getElementById('visualize-btn');
+    const loadingSpinner = document.getElementById('loading-spinner');
+    const treeContainer = document.getElementById('tree-container');
+    const treePlaceholder = document.getElementById('tree-placeholder');
+    const treeView = document.getElementById('tree-view');
+    const exportOptions = document.getElementById('export-options');
+    const exportJsonBtn = document.getElementById('export-json-btn');
+    const expandAllBtn = document.getElementById('expand-all-btn');
+    const collapseAllBtn = document.getElementById('collapse-all-btn');
+    
+    // Click to select file
+    uploadContainer.addEventListener('click', () => {
+        fileInput.click();
+    });
+    
+    // Drag and drop handling
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        uploadContainer.addEventListener(eventName, preventDefaults, false);
+    });
+    
+    function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+    
+    ['dragenter', 'dragover'].forEach(eventName => {
+        uploadContainer.addEventListener(eventName, () => {
+            uploadContainer.classList.add('drag-over');
+        }, false);
+    });
+    
+    ['dragleave', 'drop'].forEach(eventName => {
+        uploadContainer.addEventListener(eventName, () => {
+            uploadContainer.classList.remove('drag-over');
+        }, false);
+    });
+    
+    uploadContainer.addEventListener('drop', (e) => {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        if (files.length > 0) {
+            fileInput.files = files;
+            handleFileSelection();
+        }
+    }, false);
+    
+    // Handle file selection
+    fileInput.addEventListener('change', handleFileSelection);
+    
+    function handleFileSelection() {
+        if (fileInput.files.length > 0) {
+            const file = fileInput.files[0];
+            
+            // Validate file extension
+            if (!file.name.toLowerCase().endsWith('.dts') && !file.name.toLowerCase().endsWith('.dtsi')) {
+                alert('Please select a valid DTS file (.dts or .dtsi extension)');
+                fileInput.value = '';
+                return;
+            }
+            
+            fileName.textContent = file.name;
+            fileSize.textContent = formatFileSize(file.size);
+            fileDetails.classList.remove('d-none');
+        } else {
+            fileDetails.classList.add('d-none');
+        }
+    }
+    
+    function formatFileSize(bytes) {
+        if (bytes < 1024) {
+            return bytes + ' bytes';
+        } else if (bytes < 1024 * 1024) {
+            return (bytes / 1024).toFixed(2) + ' KB';
+        } else {
+            return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
+        }
+    }
+    
+    // Visualize button click
+    visualizeBtn.addEventListener('click', () => {
+        if (fileInput.files.length === 0) {
+            alert('Please select a DTS file first');
+            return;
+        }
+        
+        // Show loading spinner
+        loadingSpinner.style.display = 'block';
+        fileDetails.classList.add('d-none');
+        treePlaceholder.classList.add('d-none');
+        treeView.classList.add('d-none');
+        exportOptions.classList.add('d-none');
+        expandAllBtn.classList.add('d-none');
+        collapseAllBtn.classList.add('d-none');
+        
+        // Create form data
+        const formData = new FormData();
+        formData.append('dts_file', fileInput.files[0]);
+        
+        // Send request to visualize API
+        fetch('/api/visualize', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            loadingSpinner.style.display = 'none';
+            fileDetails.classList.remove('d-none');
+            
+            if (data.success) {
+                dtsData = data.data;
+                renderTree(dtsData);
+                treeView.classList.remove('d-none');
+                exportOptions.classList.remove('d-none');
+                expandAllBtn.classList.remove('d-none');
+                collapseAllBtn.classList.remove('d-none');
+            } else {
+                alert('Error: ' + data.error);
+                treePlaceholder.classList.remove('d-none');
+            }
+        })
+        .catch(error => {
+            loadingSpinner.style.display = 'none';
+            fileDetails.classList.remove('d-none');
+            treePlaceholder.classList.remove('d-none');
+            alert('Error: ' + error.message);
+        });
+    });
+    
+    // Render tree
+    function renderTree(data) {
+        treeView.innerHTML = '';
+        renderNode(data, treeView);
+        
+        // Add click handlers to node names
+        document.querySelectorAll('.node-name').forEach(node => {
+            node.addEventListener('click', function() {
+                const content = this.nextElementSibling;
+                const icon = this.querySelector('i');
+                
+                if (content.style.display === 'block') {
+                    content.style.display = 'none';
+                    icon.classList.remove('fa-caret-down');
+                    icon.classList.add('fa-caret-right');
+                } else {
+                    content.style.display = 'block';
+                    icon.classList.remove('fa-caret-right');
+                    icon.classList.add('fa-caret-down');
+                }
+            });
+        });
+    }
+    
+    function renderNode(node, parentElement) {
+        const nodeDiv = document.createElement('div');
+        nodeDiv.className = 'tree-node';
+        
+        // Node name with toggle
+        const nameDiv = document.createElement('div');
+        nameDiv.className = 'node-name';
+        nameDiv.innerHTML = `<i class="fas fa-caret-right tree-toggle"></i> <span class="node-content">${node.name}</span>`;
+        nodeDiv.appendChild(nameDiv);
+        
+        // Node content container
+        const contentDiv = document.createElement('div');
+        contentDiv.style.display = 'none';
+        nodeDiv.appendChild(contentDiv);
+        
+        // Node labels
+        if (node.labels && node.labels.length > 0) {
+            const labelsDiv = document.createElement('div');
+            labelsDiv.className = 'mt-2';
+            labelsDiv.innerHTML = '<strong>Labels:</strong>';
+            
+            const labelsList = document.createElement('ul');
+            labelsList.className = 'list-unstyled ms-3 mb-2';
+            
+            node.labels.forEach(label => {
+                const labelItem = document.createElement('li');
+                labelItem.innerHTML = `<span class="label-name">${label}</span>`;
+                labelsList.appendChild(labelItem);
+            });
+            
+            labelsDiv.appendChild(labelsList);
+            contentDiv.appendChild(labelsDiv);
+        }
+        
+        // Node properties
+        if (node.properties && Object.keys(node.properties).length > 0) {
+            const propsDiv = document.createElement('div');
+            propsDiv.className = 'mt-2';
+            propsDiv.innerHTML = '<strong>Properties:</strong>';
+            
+            const propsList = document.createElement('ul');
+            propsList.className = 'list-unstyled ms-3 mb-2';
+            
+            for (const [key, value] of Object.entries(node.properties)) {
+                const propItem = document.createElement('li');
+                propItem.innerHTML = `<span class="property-name">${key}</span>: <span class="property-value">${value}</span>`;
+                propsList.appendChild(propItem);
+            }
+            
+            propsDiv.appendChild(propsList);
+            contentDiv.appendChild(propsDiv);
+        }
+        
+        // Child nodes
+        if (node.children && node.children.length > 0) {
+            const childrenDiv = document.createElement('div');
+            childrenDiv.className = 'mt-2';
+            childrenDiv.innerHTML = '<strong>Children:</strong>';
+            contentDiv.appendChild(childrenDiv);
+            
+            const childrenList = document.createElement('div');
+            childrenList.className = 'ms-3 mt-1';
+            contentDiv.appendChild(childrenList);
+            
+            node.children.forEach(child => {
+                renderNode(child, childrenList);
+            });
+        }
+        
+        parentElement.appendChild(nodeDiv);
+    }
+    
+    // Export as JSON
+    exportJsonBtn.addEventListener('click', () => {
+        if (!dtsData) {
+            alert('No data to export');
+            return;
+        }
+        
+        fetch('/api/download-json', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ data: dtsData })
+        })
+        .then(response => {
+            if (response.ok) {
+                return response.blob();
+            }
+            throw new Error('Network response was not ok');
+        })
+        .then(blob => {
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            a.download = 'dts_data.json';
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+        })
+        .catch(error => {
+            alert('Error exporting JSON: ' + error.message);
+        });
+    });
+    
+    // Expand all / Collapse all
+    expandAllBtn.addEventListener('click', () => {
+        document.querySelectorAll('.node-name').forEach(node => {
+            const content = node.nextElementSibling;
+            const icon = node.querySelector('i');
+            
+            content.style.display = 'block';
+            icon.classList.remove('fa-caret-right');
+            icon.classList.add('fa-caret-down');
+        });
+    });
+    
+    collapseAllBtn.addEventListener('click', () => {
+        document.querySelectorAll('.node-name').forEach(node => {
+            const content = node.nextElementSibling;
+            const icon = node.querySelector('i');
+            
+            content.style.display = 'none';
+            icon.classList.remove('fa-caret-down');
+            icon.classList.add('fa-caret-right');
+        });
+    });
+</script>
+{% endblock %} 

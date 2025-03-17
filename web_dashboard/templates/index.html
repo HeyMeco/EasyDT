@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}EasyDT Dashboard - Home{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h1 class="card-title">Welcome to EasyDT Dashboard</h1>
+                    <p class="card-text">
+                        A comprehensive suite of tools designed to simplify working with Device Tree Source (DTS) files.
+                        Device Trees are used in embedded systems and Linux to describe hardware configurations without
+                        hardcoding them into the kernel.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-custom-secondary text-white">
+                    <h5 class="mb-0"><i class="fas fa-project-diagram me-2"></i>DTS Visualizer</h5>
+                </div>
+                <div class="card-body d-flex flex-column">
+                    <p class="card-text">
+                        A powerful visualization tool that parses Device Tree Source files and presents them as
+                        interactive, colorful tree structures, making it easier to understand complex device hierarchies.
+                    </p>
+                    <ul class="list-group list-group-flush mb-4">
+                        <li class="list-group-item"><i class="fas fa-check text-success me-2"></i>Parse and visualize DTS files</li>
+                        <li class="list-group-item"><i class="fas fa-check text-success me-2"></i>Display node properties, labels, and relationships</li>
+                        <li class="list-group-item"><i class="fas fa-check text-success me-2"></i>Export to JSON format</li>
+                    </ul>
+                    <div class="mt-auto">
+                        <a href="{{ url_for('visualizer') }}" class="btn btn-custom-secondary">Launch Visualizer</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-custom-secondary-muted text-white">
+                    <h5 class="mb-0"><i class="fas fa-code-compare me-2"></i>Coming Soon: DTS Diff Tool</h5>
+                </div>
+                <div class="card-body d-flex flex-column">
+                    <p class="card-text">
+                        Compare and highlight differences between device tree files. Useful for tracking changes
+                        between different versions of hardware configurations.
+                    </p>
+                    <ul class="list-group list-group-flush mb-4">
+                        <li class="list-group-item"><i class="fas fa-hourglass-half text-custom-secondary-muted me-2"></i>Visual comparison of DTS files</li>
+                        <li class="list-group-item"><i class="fas fa-hourglass-half text-custom-secondary-muted me-2"></i>Highlight additions, removals, and modifications</li>
+                        <li class="list-group-item"><i class="fas fa-hourglass-half text-custom-secondary-muted me-2"></i>Export diff reports</li>
+                    </ul>
+                    <div class="mt-auto">
+                        <button class="btn btn-custom-secondary-muted" disabled>Coming Soon</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 
